@@ -1,0 +1,154 @@
+{
+(*
+----------------------------------------------------------------------
+Copyright (c) 2012 David Raymond Christiansen
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+
+ * The software is provided "as is", without warranty of any kind,
+  express or implied, including but not limited to the warranties of
+  merchantability, fitness for a particular purpose and
+  noninfringement.  In no event shall the authors or copyright
+  holders be liable for any claim, damages or other liability,
+  whether in an action of contract, tort or otherwise, arising from,
+  out of or in connection with the software or the use or other
+  dealings in the software.
+----------------------------------------------------------------------
+*)
+
+module Lexical
+
+open Microsoft.FSharp.Text.Lexing
+open Grammar
+
+let lexemeAsString lexbuf =
+    LexBuffer<char>.LexemeString lexbuf
+
+let keyword s =
+    match s with
+    | "Set"    -> SET
+    | "forall" -> PI
+    | "exists" -> SIGMA
+    | "fst"    -> FST
+    | "snd"    -> SND
+    | _        -> ID s
+
+let mkString (s : string) =
+  STRING (s.Substring(1, s.Length - 2))
+
+
+}
+
+let letter      = ['a'-'z' 'A'-'Z']
+let digit       = ['0'-'9']
+let extraId     = "'" | ['_']
+let space       = [' ' '\t']
+let filenamechar = ['a'-'z' 'A'-'Z' '/' '0'-'9' ' ' '_']
+let quote       = '\"'
+let newline     = "\r\n" | '\n' | '\r'
+let lambda      = '\\' | "λ"
+
+rule token = parse
+  | "(*"                  { blockcomments 0 lexbuf }
+  | "//"                  { linecomment lexbuf }
+  | space                 { token lexbuf }
+  | newline               { lexbuf.EndPos <- lexbuf.EndPos.NextLine ;
+                            token lexbuf }
+  | letter(letter|digit|extraId)* { keyword (lexemeAsString lexbuf) }
+  | quote filenamechar+ quote { mkString (lexemeAsString lexbuf) }
+  | lambda                { LAMBDA }
+  | "Π"                   { PI     }
+  | "Σ"                   { SIGMA }
+  | "{"                   { LBRAK }
+  | "}"                   { RBRAK }
+  | '.'                   { DOT }
+  | ';'                   { SEMICOLON }
+  | "->"                  { ARROW }
+  | eof                   { EOF }
+  | ":="                  { MAKE_EQUAL }
+  | ':'                   { COLON }
+  | '|'                   { PIPE  }
+  | newline newline       { lexbuf.EndPos <- lexbuf.EndPos.NextLine ;
+                            lexbuf.EndPos <- lexbuf.EndPos.NextLine ;
+                            SEPARATOR }
+  | ":q" | ":quit"        { CMD_QUIT      }
+  | ":p" | ":postulate"   { CMD_POSTULATE }
+  | ":s" | ":showstate"   { CMD_SHOWSTATE }
+  | ":data"               { CMD_DATADEF   }
+  | ":define" | ":def"    { CMD_DEF       }
+  | ":debug"              { CMD_DEBUG     }
+  | ":l" | ":load"        { CMD_LOAD      }
+  | '('                   { LPAR }
+  | ')'                   { RPAR }
+  | '_'                   { UNDERSCORE }
+
+and blockcomments level = parse
+  | "*)"                  { if level = 0
+                            then token lexbuf
+                            else blockcomments (level - 1) lexbuf }
+  | "(*"                  { blockcomments (level + 1) lexbuf      }
+  | _                     { blockcomments level lexbuf            }
+
+and linecomment = parse
+  | newline               { lexbuf.EndPos <- lexbuf.EndPos.NextLine ;
+                            token lexbuf }
+  | eof                   { EOF }
+  | _                     { linecomment lexbuf }
+
+{
+let printToken (tok : Grammar.token) : string =
+  match tok with
+    | Grammar.EOF    -> "EOF"
+    | Grammar.SEPARATOR -> "SEPARATOR"
+    | Grammar.PI     -> "PI"
+    | Grammar.SIGMA  -> "SIGMA"
+    | Grammar.LAMBDA -> "LAMBDA"
+    | Grammar.PIPE   -> "PIPE"
+    | Grammar.ARROW  -> "ARROW"
+    | Grammar.COLON  -> "COLON"
+    | Grammar.ID x   -> "ID " + x
+    | Grammar.DOT    -> "DOT"
+    | Grammar.LPAR   -> "LPAR"
+    | Grammar.RPAR   -> "RPAR"
+    | Grammar.LBRAK  -> "LBRAK"
+    | Grammar.RBRAK  -> "RBRAK"
+    | Grammar.SET    -> "SET"
+    | Grammar.MAKE_EQUAL    -> "MAKE_EQUAL"
+    | Grammar.STRING x      -> sprintf "STRING %A" x
+    | Grammar.UNDERSCORE    -> "UNDERSCORE"
+    | Grammar.CMD_QUIT      -> "CMD_QUIT"
+    | Grammar.CMD_POSTULATE -> "CMD_POSTULATE"
+    | Grammar.CMD_SHOWSTATE -> "CMD_SHOWSTATE"
+    | Grammar.CMD_DATADEF   -> "CMD_DATADEF"
+    | Grammar.CMD_DEF       -> "CMD_DEF"
+    | Grammar.CMD_LOAD  -> "CMD_LOAD"
+    | Grammar.CMD_DEBUG -> "CMD_DEBUG"
+    | Grammar.FST       -> "FST"
+    | Grammar.SND       -> "SND"
+    | Grammar.SEMICOLON -> "SEMICOLON"
+
+let lex (str : string) : LexBuffer<char> =
+  LexBuffer<char>.FromString(str)
+
+let printLex input =
+  seq {
+    let lexbuf = lex input
+    while not lexbuf.IsPastEndOfStream do
+      match token lexbuf with
+        | Grammar.EOF -> yield! []
+        | tok -> yield tok
+  }
+  |> Seq.map printToken
+  |> Seq.fold (fun x y -> x + ", " + y) ""
+  |> printf "Lexer result: %s\n"
+
+}

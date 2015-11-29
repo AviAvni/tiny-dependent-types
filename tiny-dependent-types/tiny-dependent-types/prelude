@@ -1,5 +1,3 @@
-:debug
-
 :data Bool : Set
   | tt : Bool
   | ff : Bool

@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "tiny-dependent-types", "tiny-dependent-types\tiny-dependent-types.fsproj", "{62ACE1BA-CEDF-4AC5-9398-9BC6DB7E2C8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Terminal", "Mono.Terminal\Mono.Terminal.csproj", "{6CB901D4-9F1D-47DB-A8F5-A8E4B4A774AE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62ACE1BA-CEDF-4AC5-9398-9BC6DB7E2C8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62ACE1BA-CEDF-4AC5-9398-9BC6DB7E2C8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62ACE1BA-CEDF-4AC5-9398-9BC6DB7E2C8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62ACE1BA-CEDF-4AC5-9398-9BC6DB7E2C8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CB901D4-9F1D-47DB-A8F5-A8E4B4A774AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CB901D4-9F1D-47DB-A8F5-A8E4B4A774AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CB901D4-9F1D-47DB-A8F5-A8E4B4A774AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CB901D4-9F1D-47DB-A8F5-A8E4B4A774AE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
